@@ -1,63 +1,54 @@
-## AQI app
-
-https://github.com/hebingchang/air-in-china
-
+# AQIApp
+The go project [chongg039/AQIApp](https://github.com/chongg039/AQIApp) rewrite by python
 
 ## About database
-
-Please confirm that database charset is 'utf-8' because table raw contains chinese characters 
-
-Sql sentences for creating tables are provided in file "init.sql" 
+Please confirm that database charset is 'utf-8' because table raw contains chinese characters.  
+SQL sentences for creating tables are provided in the file "init.sql" 
 
 ## About crawler
-Crawler fetch official data from the [official Silverlight application of Ministry of Environmental Protection of China](http://106.37.208.233:20035/)
 
-Based on open-source object ["hebingchang/air-in-china"](https://github.com/hebingchang/air-in-china) 
-Using open-source library ["python-wcfbin"](https://github.com/ernw/python-wcfbin) 
+Coding with python 2.7+  
+Crawler fetch authoritative data from the [official Silverlight application of Ministry of Environmental Protection of China](http://106.37.208.233:20035/)  
 
-Coding with python 2.7+
+Based on the open-source object ["hebingchang/air-in-china"](https://github.com/hebingchang/air-in-china)  
+Using an open-source third party library ["ernw/python-wcfbin"](https://github.com/ernw/python-wcfbin)  
+
+Pay tribute to their developers!
 
 Follow modules should be pip-installed if "ImportError"
 ```
-pip install xmltodict #import xmltodict
-pip install future #import builtins
-pip install mysql-python #import MySQLdb
+pip install xmltodict		#import xmltodict
+pip install future		#import builtins
+pip install mysql-python	#import MySQLdb
+pip install requests	#import requests
 ``` 
 
-Beacuse logging shows official website update their data close to half past an hour 
-
-I use linux's "crontab" function to set scheduled tasks running every 5 mins, 
-
-and check the start time before pulling data.
-
-If you find a better way, please notify me.
-
-The data pulled down is the all stations' data in the whole country.
-
-Once updated data got, sql's AVG() function can help to calculate average value for certain city 
+The raw data pulled down at the first step covers all stations from the whole country in that hour.  
+Then SQL's AVG() function can help to calculate average values for a certain city.
 
 
 ## About server
 
-Coding with python 3.4+
-
-Using framework "aiohttp"
-
+Coding with python 3.4+  
+Using web framework ["aiohttp"](http://aiohttp.readthedocs.io/en/stable/)
+ 
 Follow modules should be pip-installed if "ImportError"
 ```
-pip3 install aiohttp
-pip3 install aiomysql
+pip3 install aiohttp		#import aiohttp
+pip3 install aiomysql		#import aiomysql
 ``` 
 
-Url rounters compliy with the server written by go.
+Interface definition in full accordance with the go-server written by [chongg039](https://github.com/chongg039).
 
 Response data is formatted to JSON
 
-Below is some samples:
+### Below is some samples:
 
-1.OneCityLatestData
+1. GetOneCityLatestData
 
 GET `http://localhost:8088/aqi/成都&now`
+
+*NOTICE: This response json don't have the outermost mark[]*
 
 ```json
 {
@@ -74,9 +65,11 @@ GET `http://localhost:8088/aqi/成都&now`
 }
 ```
 
-2.OneCityAllDayData
+2. GetOneCityAllDayData
 
-GET `http://localhost:8088/aqi/成都&today`：返回当天所有的`JSON`数据
+GET `http://localhost:8088/aqi/成都&today`
+
+*NOTICE: Sort in timeascending order*
 
 ```json
 [
@@ -120,10 +113,14 @@ GET `http://localhost:8088/aqi/成都&today`：返回当天所有的`JSON`数据
 ]
 ```
 
-3.SpecifyCitiesLatestData
+3. GetSpecifyCitiesLatestData
 
-
-GET `http://localhost:8088/aqi/成都&2017021001`
+GET `http://localhost:8088/aqi/cities?1=成都&2=北京&3=广州`
+ 
+**NOTE: No sensitive with query-string's keys, allow duplicate keys but no duplicate values**
+ 
+`http://localhost:8088/aqi/cities?aaa=成都&eee=北京&bbb=广州` **allow**  
+`http://localhost:8088/aqi/cities?aaa=成都&eee=北京&bbb=北京` **disallow**  
 
 ```json
 [
@@ -165,17 +162,85 @@ GET `http://localhost:8088/aqi/成都&2017021001`
 	}
 ]
 ```
+4. (NEW)GetOneCityLast4hData
 
-P.S. Cityname no exists, Query list duplication will trigger "400 bad request"
+GET `http://localhost:8088/getdata/last4h?city=成都`
+
+```json
+[
+	{
+		"update": "2017-03-14 19:00",
+		"city": "成都",
+		"aqi": 44
+	},
+	{
+		"update": "2017-03-14 20:00",
+		"city": "成都",
+		"aqi": 46
+	},
+	{
+		"update": "2017-03-14 21:00",
+		"city": "成都",
+		"aqi": 50
+	},
+	{
+		"update": "2017-03-14 22:00",
+		"city": "成都",
+		"aqi": 51
+	}
+]
+```
 
 
-## use supervisor for server deployment
+5. (NEW)GetSpecifyCitiesLatestData
 
-Please add following parameters to configuration file
+GET `http://localhost:8088/getdata/latest?city=成都,北京,广州`
+
+```json
+[
+	{
+		"update": "2017-03-14 21:00",
+		"city": "成都",
+		"aqi": 50,
+		"trend": 1
+	},
+	{
+		"update": "2017-03-14 21:00",
+		"city": "北京",
+		"aqi": 93,
+		"trend": 1
+	},
+	{
+		"update": "2017-03-14 21:00",
+		"city": "广州",
+		"aqi": 30,
+		"trend": 0
+	}
+]
+```
+
+*TIPS: Citys' order in response data is sort by the order in request parameter*  
+
+**ATTENTION: City's name no existing, Query Parameters' value duplication will trigger "400 : bad request" status code**
+
+## About deployment
+
+### For crawler
+I use linux's "crontab" function to set a scheduled task running every 5 mins.  
+Beacuse logging shows official website update their data close to half past an hour,  
+I made the program check its start time before pulling data.  
+*Can only run between 25 minutes and 35minutes past an hour*  
+**If you know a better way, please notify me.**
+
+### For server
+I use supervisor(really unfriendly to chinese output, and can not guide python's print() to stdout)  
+In order to log out sql-select costs, I use logging module and replace print() by logger.info()
+
+Please add following parameters to the supervisor's program configuration file
 
 ```
-loglevel=info
-redirect_stderr=true
-stdout_logfile=...
+loglevel=info			#set log out level
+redirect_stderr=true		#logging is regard as stderr by default
+stdout_logfile=...		#set directory for stdout file
 ```
 P.S. I disable default aiohttp-access log
