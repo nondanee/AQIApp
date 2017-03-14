@@ -69,7 +69,7 @@ GET `http://localhost:8088/aqi/成都&now`
 
 GET `http://localhost:8088/aqi/成都&today`
 
-*NOTICE: Sort in timeascending order*
+*NOTICE: Sort in time ascending order*
 
 ```json
 [
