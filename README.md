@@ -20,7 +20,7 @@ Follow modules should be pip-installed if "ImportError"
 pip install xmltodict		#import xmltodict
 pip install future		#import builtins
 pip install mysql-python	#import MySQLdb
-pip install requests	#import requests
+pip install requests		#import requests
 ``` 
 
 The raw data pulled down at the first step covers all stations from the whole country in that hour.  
@@ -117,10 +117,11 @@ GET `http://localhost:8088/aqi/成都&today`
 
 GET `http://localhost:8088/aqi/cities?1=成都&2=北京&3=广州`
  
-**NOTE: No sensitive with query-string's keys, allow duplicate keys but no duplicate values**
- 
-`http://localhost:8088/aqi/cities?aaa=成都&eee=北京&bbb=广州` **allow**  
-`http://localhost:8088/aqi/cities?aaa=成都&eee=北京&bbb=北京` **disallow**  
+**NOTE: Nonsensitive with query-string's keys, allow duplicate keys but no duplicate values**
+
+`http://localhost:8088/aqi/cities?city=成都&city=北京&city=广州` **[√]**  
+`http://localhost:8088/aqi/cities?aaaa=成都&eeee=北京&bbbb=广州` **[√]**  
+`http://localhost:8088/aqi/cities?aaaa=成都&eeee=北京&bbbb=北京` **[×]** 
 
 ```json
 [
@@ -228,12 +229,12 @@ GET `http://localhost:8088/getdata/latest?city=成都,北京,广州`
 ### For crawler
 I use linux's "crontab" function to set a scheduled task running every 5 mins.  
 Beacuse logging shows official website update their data close to half past an hour,  
-I made the program check its start time before pulling data.  
+I make the program check its start time before pulling data.  
 *Can only run between 25 minutes and 35minutes past an hour*  
 **If you know a better way, please notify me.**
 
 ### For server
-I use supervisor(really unfriendly to chinese output, and can not guide python's print() to stdout)  
+I use supervisor (really unfriendly to chinese output, and can not guide python's print() to stdout)  
 In order to log out sql-select costs, I use logging module and replace print() by logger.info()
 
 Please add following parameters to the supervisor's program configuration file
