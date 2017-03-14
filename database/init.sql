@@ -1,0 +1,56 @@
+create database airx;
+
+create table raw(
+TimePoint datetime,
+StationCode varchar(5),
+PositionName varchar(15),
+Longitude Decimal(7,4),
+Latitude Decimal(7,4),
+Area varchar(10),
+CityCode int(6),
+ProvinceId int(2),
+AQI int(3),
+Quality varchar(4),
+O3 int(3),
+O3_24h int(3),
+O3_8h int(3),
+O3_8h_24h int(3),
+CO Decimal(3,1),
+CO_24h Decimal(3,1),
+SO2 int(3),
+SO2_24h int(3),
+NO2 int(3),
+NO2_24h int(3),
+PM2_5 int(3),
+PM2_5_24h int(3),
+PM10 int(3),
+PM10_24h int(3),
+PrimaryPollutant varchar(50),
+Unheathful varchar(100),
+Measure varchar(50),
+IsPublish tinyint(1),
+PRIMARY KEY(TimePoint,StationCode)
+);
+
+
+create table working (
+TimePoint datetime,
+City varchar(10),
+AQI int(3),
+Trend tinyint(1),
+O3 int(3),
+O3_24h int(3),
+O3_8h int(3),
+O3_8h_24h int(3),
+CO Decimal(3,1),
+CO_24h Decimal(3,1),
+SO2 int(3),
+SO2_24h int(3),
+NO2 int(3),
+NO2_24h int(3),
+PM2_5 int(3),
+PM2_5_24h int(3),
+PM10 int(3),
+PM10_24h int(3),
+PRIMARY KEY(TimePoint,City)
+);
